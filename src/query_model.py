@@ -14,15 +14,16 @@ RESULTS_DIR = os.path.join(BASE_DIR, 'results')
 # Initialize the OpenAI API
 openai.api_key = API_KEY
 
-def query_openai_model(prompt, model=MODEL_NAME, temperature=0.7, max_tokens=150):
+def query_openai_model(prompt, model=MODEL_NAME, temperature=0.7, max_tokens=400):
     """
     Query the OpenAI API with the given prompt and return the response.
     Uses ChatCompletion API for openai>=1.0.0.
     """
     try:
+        prompt_1 = "Let's break down this question. Put the answer at the end of the sentence."
         response = openai.ChatCompletion.create(
             model=model,
-            messages=[{"role": "user", "content": prompt}, {"role": "system", "content": "Just response the answer"}, {"role": "system", "content": "Let's break down the problem"}],
+            messages=[{"role": "user", "content": prompt}, {"role": "system", "content": prompt_1}],
             temperature=temperature,
             max_tokens=max_tokens
         )
@@ -42,20 +43,22 @@ def save_responses(responses, output_file):
 
 def main(dataset_file, output_file, delay=1):
     data = load_dataset(dataset_file)
-    out_topic_data = [entry for entry in data if entry.get("sentence_label") == "in_topic"]
+    # data = [entry for entry in data if entry.get("sentence_label") == "out_topic"]
+    # data = [entry for entry in data if entry.get("role_label") == "nonoverlapped"]
+    data = [entry for entry in data if entry.get("number_label") == "out_range"]
     
     # Randomly select 100 entries
-    if len(out_topic_data) > 100:
-        out_topic_data = random.sample(out_topic_data, 100)
+    if len(data) > 100:
+        data = random.sample(data, 100)
 
     responses = []
 
-    print(f"Loaded {len(out_topic_data)} entries from {dataset_file}.")
-    for idx, entry in enumerate(out_topic_data):
+    print(f"Loaded {len(data)} entries from {dataset_file}.")
+    for idx, entry in enumerate(data):
         original_prompt = entry.get("original_question")
         new_prompt = entry.get("new_question")
 
-        print(f"Querying model for entry {idx + 1}/{len(out_topic_data)}...")
+        print(f"Querying model for entry {idx + 1}/{len(data)}...")
 
         # Query original question
         original_response = query_openai_model(original_prompt)
