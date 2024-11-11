@@ -1,0 +1,1 @@
+In this GitHub repository, users can use the GSM-IC dataset with irrelevant information to evaluate how GPT models handle irrelevant statements in the question. An API key is required in the config.py file. Also, remember to specify the model in th e config.py file to run the query_model.py.
